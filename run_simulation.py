@@ -4,13 +4,13 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 from Abhyudaya import Atmosphere, acceleration, get_control_action
-from Abhyudaya.constants import GRAVITY, ROCKET_AREA, ROCKET_MASS, vs
+from Abhyudaya.constants import GRAVITY, ROCKET_AREA, ROCKET_MASS, vs, TARGET_APOGEE
 
 
 def run_simulation(is_controlled):
-    h = 1000
+    h = 1500
 
-    vr=0.75*vs
+    vr=2*vs
     time = 0
     DT=0.1
     
@@ -22,7 +22,7 @@ def run_simulation(is_controlled):
     
     while vr > 0:
         if is_controlled:
-            delta = get_control_action.get_control_action(h, vr, 3000, 5)
+            delta = get_control_action.get_control_action(h, vr, TARGET_APOGEE, 5)
         else:
             delta = 0
         
@@ -46,5 +46,28 @@ if __name__ == '__main__':
     time_uncontrolled, alt_uncontrolled, _ = run_simulation(is_controlled=False)
     time_controlled, alt_controlled, delta_controlled = run_simulation(is_controlled=True)
 
-    print(f"Uncontrolled Apogee: {alt_uncontrolled.max():.2f} m")
-    print(f"Controlled Apogee: {alt_controlled.max():.2f} m")
+    uncontrolled_apogee = alt_uncontrolled.max()
+    controlled_apogee   = alt_controlled.max()
+
+    absolute_error      = abs(controlled_apogee - TARGET_APOGEE)
+    percentage_error    = absolute_error / TARGET_APOGEE * 100
+    overshoot           = abs(uncontrolled_apogee - TARGET_APOGEE)
+    improvement_pct     = (overshoot - absolute_error) / overshoot * 100
+    total_timesteps     = len(time_controlled)
+
+    activation_time = None
+    for i, d in enumerate(delta_controlled):
+        if d > 0:
+            activation_time = time_controlled[i]
+            break
+
+    print(f"\n── Simulation Metrics ───────────────────────────────")
+    print(f"Uncontrolled apogee:       {uncontrolled_apogee:.2f} m")
+    print(f"Controlled apogee:         {controlled_apogee:.2f} m")
+    print(f"Target apogee:             {TARGET_APOGEE:.2f} m")
+    print(f"Absolute error:            {absolute_error:.2f} m")
+    print(f"Percentage error:          {percentage_error:.4f} %")
+    print(f"Uncontrolled overshoot:    {overshoot:.2f} m")
+    print(f"Improvement:               {improvement_pct:.2f} %")
+    print(f"Total timesteps:           {total_timesteps}")
+    print(f"Airbrake activation time:  {activation_time:.1f} s")
