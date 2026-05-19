@@ -42,8 +42,9 @@ def run_simulation(is_controlled):
     return np.array(time_history), np.array(h_history), np.array(delta_history)
 
 # Run both cases
-time_uncontrolled, alt_uncontrolled, _ = run_simulation(is_controlled=False)
-time_controlled, alt_controlled, delta_controlled = run_simulation(is_controlled=True)
+if __name__ == '__main__':
+    time_uncontrolled, alt_uncontrolled, _ = run_simulation(is_controlled=False)
+    time_controlled, alt_controlled, delta_controlled = run_simulation(is_controlled=True)
 
-print(f"Uncontrolled Apogee: {alt_uncontrolled.max():.2f} m")
-print(f"Controlled Apogee: {alt_controlled.max():.2f} m")
+    print(f"Uncontrolled Apogee: {alt_uncontrolled.max():.2f} m")
+    print(f"Controlled Apogee: {alt_controlled.max():.2f} m")
