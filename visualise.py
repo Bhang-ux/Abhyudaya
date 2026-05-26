@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Abhyudaya.run_simulation import run_simulation
 from Abhyudaya import predict_apogee
-from Abhyudaya.constants import TARGET_APOGEE
+from Abhyudaya.constants import TARGET_APOGEE, vs, H_INIT, V_INIT
 
 # Run both simulations
 time_uncontrolled, alt_uncontrolled, delta_uncontrolled = run_simulation(is_controlled=False)
@@ -19,8 +19,8 @@ from Abhyudaya import predict_apogee, get_control_action
 from Abhyudaya.constants import TARGET_APOGEE, vs
 
 # Rerun controlled to capture predicted apogee at each step
-h = 1500
-vr = 2 * vs
+h = H_INIT
+vr = V_INIT
 DT = 0.1
 error_history = []
 time_err = []

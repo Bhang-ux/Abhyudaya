@@ -4,13 +4,12 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 from Abhyudaya import Atmosphere, acceleration, get_control_action
-from Abhyudaya.constants import GRAVITY, ROCKET_AREA, ROCKET_MASS, vs, TARGET_APOGEE
+from Abhyudaya.constants import GRAVITY, ROCKET_AREA, ROCKET_MASS, vs, TARGET_APOGEE, H_INIT, V_INIT
 
 
 def run_simulation(is_controlled):
-    h = 1500
-
-    vr=2*vs
+    h = H_INIT
+    vr = V_INIT
     time = 0
     DT=0.1
     
