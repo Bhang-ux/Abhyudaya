@@ -7,4 +7,4 @@ TARGET_APOGEE = 10000.0  # m
 GRAVITY = 9.81  # m/s^2
 vs=343 #m/s
 H_INIT = 3000        # burnout altitude (m)
-V_INIT = 2 * vs    # burnout velocity (m/s) — Mach 1.3
+V_INIT = 2.5 * vs    # burnout velocity (m/s) — Mach 1.3
