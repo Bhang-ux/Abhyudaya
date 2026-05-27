@@ -131,7 +131,7 @@ def run_pid_simulation(Kp, Ki, Kd, h_init, v_init, target, dt=0.1):
         apogee:     maximum altitude reached (m)
         error:      |apogee - target| in metres
     """
-    from Abhyudaya.acceleration import acceleration
+    from acceleration import acceleration
 
     # What: initialise simulation state
     h          = h_init
@@ -181,7 +181,7 @@ def run_pid_simulation(Kp, Ki, Kd, h_init, v_init, target, dt=0.1):
 if __name__ == '__main__':
     # What: quick test of PID controller with hand-tuned gains
     # Why: verify it works before plugging into Optuna
-    from Abhyudaya.constants import H_INIT, V_INIT, TARGET_APOGEE
+    from constants import H_INIT, V_INIT, TARGET_APOGEE
 
     print("Testing PID controller with initial gains...")
     print(f"H_INIT={H_INIT}m | V_INIT={V_INIT:.1f}m/s | TARGET={TARGET_APOGEE}m")
