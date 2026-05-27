@@ -1,4 +1,8 @@
 import os
+import sys
+
+# Add current directory to path so Python can find all modules
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st
 import numpy as np
@@ -33,7 +37,7 @@ st.divider()
 st.sidebar.title("⚙️ Flight Configuration")
 st.sidebar.markdown("Adjust parameters and click **Run Simulation**")
 
-from Abhyudaya.constants import vs
+from constants import vs
 
 h_init = st.sidebar.slider(
     "Burnout Altitude H_INIT (m)",
@@ -43,7 +47,7 @@ h_init = st.sidebar.slider(
 
 v_factor = st.sidebar.slider(
     "Burnout Velocity (× speed of sound)",
-    min_value=0.8, max_value=2.0,
+    min_value=0.8, max_value=2.5,
     value=2.5, step=0.05
 )
 v_init = v_factor * vs
@@ -110,14 +114,12 @@ with tab1:
 
             results = {}
 
-            # Import physics modules
-            from Abhyudaya.acceleration import acceleration
-            from Abhyudaya.pid_controller import run_pid_simulation
-            from Abhyudaya.optimise_pid import find_optimal_pid
+            from acceleration import acceleration
+            from pid_controller import run_pid_simulation
+            from optimise_pid import find_optimal_pid
 
             def run_generic_simulation(h0, v0, kp, target_apogee, dt=0.1):
-                """Simple P-controller simulation."""
-                from Abhyudaya.predict_apogee import predict_apogee
+                from predict_apogee import predict_apogee
                 h, v, t = h0, v0, 0.0
                 times, alts, deltas = [t], [h], []
                 while v > 0:
@@ -145,7 +147,6 @@ with tab1:
                     alts.append(h)
                 return np.array(times), np.array(alts)
 
-            # Run selected simulations
             if show_uncontrolled:
                 t_u, a_u = run_uncontrolled(h_init, v_init)
                 results['Uncontrolled'] = {
@@ -184,7 +185,7 @@ with tab1:
                     'gains': (Kp, Ki, Kd)
                 }
 
-        # ── Metrics row ───────────────────────────────────────────────────────
+        # Metrics row
         st.subheader("Results")
         cols = st.columns(len(results))
         for i, (name, data) in enumerate(results.items()):
@@ -196,7 +197,7 @@ with tab1:
                     st.metric(name, f"{data['apogee']:.2f} m",
                               f"Error: {data['error']:.4f} m")
 
-        # ── Altitude plot ─────────────────────────────────────────────────────
+        # Altitude plot
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
         ax1 = axes[0]
@@ -213,7 +214,6 @@ with tab1:
         ax1.legend()
         ax1.grid(True, alpha=0.4)
 
-        # ── Deflection plot ───────────────────────────────────────────────────
         ax2 = axes[1]
         for name, data in results.items():
             if data['deltas'] is not None and len(data['deltas']) > 0:
@@ -232,7 +232,6 @@ with tab1:
         st.pyplot(fig)
         plt.close()
 
-        # ── PID gains display ─────────────────────────────────────────────────
         if show_pid and 'PID (Optuna)' in results:
             Kp, Ki, Kd = results['PID (Optuna)']['gains']
             st.subheader("Optimal PID Gains Found by Bayesian Optimisation")
@@ -265,12 +264,11 @@ with tab2:
     if run_mc:
         with st.spinner(f"Running {n_mc_trials} Monte Carlo trials..."):
 
-            from Abhyudaya.constants import ROCKET_MASS
-            from Abhyudaya.acceleration import acceleration
-            from Abhyudaya.bilinear_interpolate import bilinear_interpolate
+            from constants import ROCKET_MASS, GRAVITY, ROCKET_AREA
+            from bilinear_interpolate import bilinear_interpolate
+            from optimise_pid import find_optimal_pid
 
             def mc_acceleration(h, v, delta, mass, cx_mult):
-                from Abhyudaya.constants import GRAVITY, ROCKET_AREA
                 T   = 15.04 - 0.00649 * h
                 k   = 1.2050
                 rho = max(k * ((T + 273) / 288.08) ** 4.256, 0.001)
@@ -286,7 +284,6 @@ with tab2:
                     h += v * dt
                 return h
 
-            # Get optimal PID gains for nominal conditions
             best_params, _ = find_optimal_pid(
                 h_init, v_init, target,
                 n_trials=50, verbose=False
@@ -308,7 +305,6 @@ with tab2:
                 v_pert  = np.clip(v_pert,  v_init*0.8,      v_init*1.2)
                 cx_mult = np.clip(cx_mult, 0.7,              1.3)
 
-                # PID flight
                 h, v  = h_init, v_pert
                 integ = prev_err = 0.0
                 max_h = h
@@ -325,7 +321,6 @@ with tab2:
                     max_h  = max(max_h, h)
                 pid_apogees.append(max_h)
 
-                # Uncontrolled flight
                 h, v  = h_init, v_pert
                 max_h = h
                 while v > 0:
@@ -341,14 +336,12 @@ with tab2:
         unc_apogees = np.array(unc_apogees)
         pid_errors  = np.abs(pid_apogees - target)
 
-        # Metrics
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Mean Error",         f"{np.mean(pid_errors):.2f} m")
-        m2.metric("Within 50m",         f"{np.mean(pid_errors<50)*100:.1f}%")
-        m3.metric("P5-P95 Range",       f"{np.percentile(pid_apogees,95)-np.percentile(pid_apogees,5):.2f} m")
-        m4.metric("VaR (95%)",          f"{np.percentile(pid_errors,95):.2f} m")
+        m1.metric("Mean Error",   f"{np.mean(pid_errors):.2f} m")
+        m2.metric("Within 50m",   f"{np.mean(pid_errors<50)*100:.1f}%")
+        m3.metric("P5-P95 Range", f"{np.percentile(pid_apogees,95)-np.percentile(pid_apogees,5):.2f} m")
+        m4.metric("VaR (95%)",    f"{np.percentile(pid_errors,95):.2f} m")
 
-        # Plot
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
         axes[0].hist(unc_apogees, bins=40, alpha=0.5, color='gray',
