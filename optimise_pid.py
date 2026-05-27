@@ -4,8 +4,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import optuna
 import numpy as np
-from Abhyudaya.pid_controller import run_pid_simulation
-from Abhyudaya.constants import H_INIT, V_INIT, TARGET_APOGEE
+from pid_controller import run_pid_simulation
+from constants import H_INIT, V_INIT, TARGET_APOGEE
+from run_simulation import run_simulation
 
 # What: suppress Optuna's per-trial verbose output
 # Why: we print our own cleaner progress summary

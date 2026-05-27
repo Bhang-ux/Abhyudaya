@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
-from Abhyudaya import predict_apogee
+import predict_apogee
 
 
 def get_control_action(h, v, target_apogee, Kp):

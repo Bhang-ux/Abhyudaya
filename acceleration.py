@@ -1,9 +1,9 @@
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Abhyudaya import Atmosphere, bilinear_interpolate
-from Abhyudaya.constants import GRAVITY, ROCKET_AREA, ROCKET_MASS, vs
-
+import Atmosphere
+import bilinear_interpolate
+from constants import GRAVITY, ROCKET_AREA, ROCKET_MASS, vs
 
 def acceleration(h, vr, defl):
     
